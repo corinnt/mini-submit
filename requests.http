@@ -3,9 +3,8 @@ GET http://localhost:8000/
 GET http://localhost:8000/Sam
 ###
 GET http://localhost:8000/protected
-
 ### this one works
 GET http://localhost:8000/protected
 x-api-key: c2VjcmV0
 ###
-GET http://localhost:8000
+GET http://localhost:8000/
