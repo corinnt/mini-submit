@@ -1,4 +1,4 @@
-use rocket::{launch, post, get, routes, response::{status::Created}, State};
+use rocket::{Request, catchers, catch, launch, post, get, routes, response::{status::Created}, State};
 use rocket::{serde::json::Json, uri}; 
 
 use serde::{Serialize, Deserialize};
@@ -24,6 +24,11 @@ mod api_key; //like an import for the api_key.rs file
 #[get("/protected")]
 fn protected(key: api_key::ApiKey) -> String{
     format!("Welcome to WebSubmit. You presented key {}", key.0)
+}
+
+#[catch(default)]
+fn default_catcher() -> &'static str {
+    "I couldn't find that :( Try something else?"
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -80,6 +85,8 @@ fn rocket() -> _ {
     .manage(RwLock::new(HashMap::<ID, QuestionResponse>::new()))
      //generate primary keys for responses from 1
     .manage(ResponseCount(AtomicUsize::new(1)))
+    //
+    .register("/", catchers![default_catcher])
 }
 
 /////
