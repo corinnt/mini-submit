@@ -1,7 +1,12 @@
-use rocket::*; //this feels like bad form
-use serde::{Serialize, Deserialize};
-use serde_json::*; //TODO this is wrong
+use rocket::{launch, post, get, routes, response::{status::Created}, State};
+use rocket::{serde::json::Json, uri}; 
 
+use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
+use std::str;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::RwLock;
+//use serde_json::*; //TODO this is wrong -> look at imports on RustyRockets
 //[macro_use] extern crate rocket;
 
 #[get("/")] //"Macros"
@@ -21,7 +26,7 @@ fn protected(key: api_key::ApiKey) -> String{
     format!("Welcome to WebSubmit. You presented key {}", key.0)
 }
 
-#[derive(Serialize, Debug, Clone)] // why Clone?
+#[derive(Serialize, Debug, Clone)]
 struct QuestionResponse{
     id: ID,
     answer: String,
@@ -32,15 +37,15 @@ struct NewResponse{
     answer: String,
 }
 
+type ID = usize;
 struct ResponseCount(AtomicUsize);
-type ResponseMap = HashMap<ID, QuestionResponse>;
+type ResponseMap = RwLock<HashMap<ID, QuestionResponse>>;
 
 #[post("/responses", format = "json", data = "<response>")]
 fn add_response(
     response: Json<NewResponse>,
-    resp_state: $State<ResponseMap>,
-    resp_count: &State<ResponseCount>,
-    ) -> Created<Json<QuestionResponse>> {
+    resp_state: &State<ResponseMap>,
+    resp_count: &State<ResponseCount>) -> Created<Json<QuestionResponse>> {
         //generate new response and ID
         let new_id = resp_count.0.fetch_add(1, Ordering::Relaxed);
         let new_response = QuestionResponse {
@@ -52,27 +57,29 @@ fn add_response(
         let mut responses = resp_state.write().unwrap();
         responses.insert(new_id, new_response.clone());
 
-        let location = uri!("/", get_response(new_id));
+        let location = uri!("/", get_response(new_id)); //uri macro to write the resonse to a new url
         Created::new(location.to_string()).body(Json(new_response)) // TODO: Json use is wrong
-    }
+}
 
-#[get("/a_response")]
+#[get("/responses/<id>")]
 fn get_response(id: ID, resp_state: &State<ResponseMap>) -> Option<Json<QuestionResponse>>{
     let responses = resp_state.read().unwrap();
     responses.get(&id).map(|resp| Json(resp.clone()))
 }
 
-
-
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![
+    rocket::build()
+    .mount("/", routes![
         hello,
         question,
         protected, 
         add_response,
         get_response,
         ])
+    .manage(RwLock::new(HashMap::<ID, QuestionResponse>::new()))
+     //generate primary keys for responses from 1
+    .manage(ResponseCount(AtomicUsize::new(1)))
 }
 
 /////

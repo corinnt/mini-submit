@@ -1,10 +1,28 @@
 GET http://localhost:8000/
 ###
-GET http://localhost:8000/Sam
+GET http://localhost:8000/AIDAN
 ###
 GET http://localhost:8000/protected
 ### this one works
 GET http://localhost:8000/protected
 x-api-key: c2VjcmV0
 ###
-GET http://localhost:8000/
+POST http://localhost:8000/responses
+Content-Type: application/json
+
+{
+    "answer": "I thought the authors limited the scope too much to fully deal with GDPR compliance."
+}
+
+###
+POST http://localhost:8000/responses
+Content-Type: application/json
+
+{
+    "answer": "How difficult would it be to write policies for an application that you weren't familiar with?"
+}
+###
+GET http://localhost:8000/responses/3
+
+###
+GET http://localhost:8000/responses/7

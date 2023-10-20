@@ -2,6 +2,10 @@
 
 ### To-Do
 
-Figure out JSON usage w/ serde to fix `new_response`
+JSON usage w/ serde to fix `new_response`
 
-Figure out how to use `derive(FromForm)` 
+How to use `derive(FromForm)`?
+
+Make an html form with a field w/ Handlebars
+
+Nest pages under `/protected` and/or make sequential webpages? but low priority after just making a functional form
