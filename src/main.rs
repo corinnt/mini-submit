@@ -1,6 +1,5 @@
 use rocket::{Request, catchers, catch, launch, post, get, routes, response::{status::Created}, State};
 use rocket::{serde::json::Json, uri}; 
-
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 use std::str;
@@ -29,6 +28,11 @@ fn protected(key: api_key::ApiKey) -> String{
 #[catch(default)]
 fn default_catcher() -> &'static str {
     "I couldn't find that :( Try something else?"
+}
+
+#[catch(401)]
+fn incorrect_key_catcher() -> &'static str {
+    "Incorrect key, try again!"
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -86,7 +90,7 @@ fn rocket() -> _ {
      //generate primary keys for responses from 1
     .manage(ResponseCount(AtomicUsize::new(1)))
     //
-    .register("/", catchers![default_catcher])
+    .register("/", catchers![default_catcher, incorrect_key_catcher])
 }
 
 /////
