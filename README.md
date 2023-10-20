@@ -2,8 +2,6 @@
 
 ### To-Do
 
-JSON usage w/ serde to fix `new_response`
-
 How to use `derive(FromForm)`?
 
 Make an html form with a field w/ Handlebars
